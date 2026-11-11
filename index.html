@@ -37,6 +37,8 @@
     --text: #F2F3F5; --muted: #A3A7B3; --accent: #FF8A2A; --ink: #0A0B0E;
     --g-text: #A9CBFF; --g-bg: #16243D; --g-dot: #7FB2FF;
     --x-text: #FFC499; --x-bg: #3A2210; --x-dot: #FFB37A;
+    /* Translucent layer that scrolls up over the wallpaper. Last number = darkness (0 = see-through, 1 = solid) */
+    --overlay: rgba(14, 15, 19, .92);
     --on-accent: #0A0B0E; --muted-2: #E4E6EA; --nolink-bg: #13151A; --placeholder: #8A8F9C;
     color-scheme: dark;
   }
@@ -45,11 +47,16 @@
     --text: #15171C; --muted: #5B606B; --accent: #C2410C;
     --g-text: #1A56B8; --g-bg: #E8F0FE; --g-dot: #1A56B8;
     --x-text: #9A3412; --x-bg: #FFF1E6; --x-dot: #9A3412;
+    --overlay: rgba(246, 246, 244, .92);
     --on-accent: #FFFFFF; --muted-2: #3A3E48; --nolink-bg: #FAFAF8; --placeholder: #767B86;
     color-scheme: light;
   }
   * { box-sizing: border-box; }
-  html, body { margin: 0; background: var(--bg); color: var(--text); }
+  html, body { margin: 0; background: #0A0B0E; color: var(--text); }
+  /* One wallpaper fixed behind the whole page; the content layer scrolls up over it */
+  body::before { content: ''; position: fixed; inset: 0; background: #0A0B0E url(wallpaper.jpg) center top / cover no-repeat; pointer-events: none; z-index: 0; }
+  .hero, main.portal, .center { position: relative; z-index: 1; }
+  main.portal, .center { background: var(--overlay); min-height: calc(100vh - 160px); box-shadow: 0 -12px 32px rgba(0, 0, 0, .35); }
   body { font-family: Saira, 'Noto Sans TC', system-ui, -apple-system, sans-serif; min-height: 100vh; }
   a { color: var(--text); text-decoration: none; }
   a:hover { color: var(--accent); }
@@ -60,9 +67,8 @@
   [hidden] { display: none !important; }
 
   /* Header */
-  .hero { position: relative; background: var(--ink); }
-  .hero img { display: block; width: 100%; height: 280px; object-fit: cover; object-position: center top; }
-  .hero.small img { height: 160px; }
+  .hero { position: relative; height: 280px; }
+  .hero.small { height: 160px; }
   .topbar { position: absolute; top: 0; left: 0; right: 0; background: rgba(10, 11, 14, .72); }
   .topbar .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding-top: 10px; padding-bottom: 10px; }
   .brand { font-family: 'Saira Condensed', sans-serif; font-weight: 700; font-size: 17px; letter-spacing: 2px; color: #FF8A2A; }
@@ -145,8 +151,8 @@
   @keyframes spin { to { transform: rotate(360deg); } }
 
   @media (max-width: 640px) {
-    .hero img { height: 190px; }
-    .hero.small img { height: 130px; }
+    .hero { height: 190px; }
+    .hero.small { height: 130px; }
     .title-box h1 { font-size: 26px; }
     .user .email { display: none; }
     .topbar .wrap { flex-wrap: nowrap; padding-left: 16px; padding-right: 16px; gap: 8px; }
@@ -160,7 +166,6 @@
 <body>
 
 <header class="hero" id="hero">
-  <img src="header.jpg" alt="">
   <div class="topbar" id="topbar">
     <div class="wrap">
       <span class="brand">GBT · VIETNAM</span>
