@@ -13,7 +13,7 @@
 <meta name="theme-color" content="#0E0F13">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Saira:wght@400;500;600;700&family=Saira+Condensed:wght@600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
   // ====== Settings: fill these in (see README) ======
@@ -50,7 +50,7 @@
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; background: var(--bg); color: var(--text); }
-  body { font-family: Inter, 'Noto Sans TC', system-ui, -apple-system, sans-serif; min-height: 100vh; }
+  body { font-family: Saira, 'Noto Sans TC', system-ui, -apple-system, sans-serif; min-height: 100vh; }
   a { color: var(--text); text-decoration: none; }
   a:hover { color: var(--accent); }
   button { font-family: inherit; }
@@ -65,7 +65,7 @@
   .hero.small img { height: 160px; }
   .topbar { position: absolute; top: 0; left: 0; right: 0; background: rgba(10, 11, 14, .72); }
   .topbar .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding-top: 10px; padding-bottom: 10px; }
-  .brand { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: 1.5px; color: #FF8A2A; }
+  .brand { font-family: 'Saira Condensed', sans-serif; font-weight: 700; font-size: 17px; letter-spacing: 2px; color: #FF8A2A; }
   .user { display: flex; align-items: center; gap: 12px; }
   .avatar { width: 30px; height: 30px; border-radius: 50%; background: #FF8A2A; color: #0A0B0E; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; overflow: hidden; }
   .avatar img { width: 100%; height: 100%; object-fit: cover; }
@@ -82,9 +82,9 @@
   .admin-link { font-size: 13px; color: #FF8A2A; padding: 10px 4px; }
   .title-wrap { position: absolute; left: 0; right: 0; bottom: 20px; }
   .title-box { display: inline-flex; flex-direction: column; gap: 4px; background: rgba(10, 11, 14, .8); padding: 14px 20px; border-radius: 10px; }
-  .title-box h1 { margin: 0; color: #F2F3F5; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 30px; line-height: 1.1; }
+  .title-box h1 { margin: 0; color: #F2F3F5; font-family: 'Saira Condensed', 'Noto Sans TC', sans-serif; font-weight: 700; font-size: 36px; line-height: 1.05; letter-spacing: .3px; }
   .title-box span { font-size: 14px; color: #C9CCD3; }
-  .hero.small .title-box h1 { font-size: 22px; }
+  .hero.small .title-box h1 { font-size: 26px; }
 
   /* Main */
   main.portal { padding: 28px 0 56px; }
@@ -110,8 +110,8 @@
   .pill { min-height: 36px; padding: 0 14px; border-radius: 999px; font-size: 13px; cursor: pointer; background: var(--surface); color: var(--muted-2); border: 1px solid var(--line-2); font-weight: 500; }
   .pill[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); border-color: var(--accent); font-weight: 600; }
   section.group { display: flex; flex-direction: column; gap: 12px; }
-  section.group h2 { margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 600; display: flex; align-items: baseline; gap: 8px; }
-  section.group h2 small { font-family: Inter, sans-serif; font-size: 13px; font-weight: 500; color: var(--muted); }
+  section.group h2 { margin: 0; font-family: 'Saira Condensed', 'Noto Sans TC', sans-serif; font-size: 21px; font-weight: 700; letter-spacing: .3px; display: flex; align-items: baseline; gap: 8px; }
+  section.group h2 small { font-family: Saira, sans-serif; font-size: 13px; font-weight: 500; color: var(--muted); }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 12px; }
   .card { display: flex; flex-direction: column; gap: 10px; padding: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; min-height: 108px; transition: border-color .15s, background .15s; }
   a.card:hover { border-color: var(--accent); background: var(--surface-2); color: var(--text); }
@@ -132,7 +132,7 @@
   /* Center screens: sign-in, loading, no access, error */
   .center { display: flex; align-items: center; justify-content: center; padding: 56px 24px; }
   .panel { width: 100%; max-width: 460px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 40px 32px; display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; }
-  .panel h2 { margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 24px; font-weight: 700; }
+  .panel h2 { margin: 0; font-family: 'Saira Condensed', 'Noto Sans TC', sans-serif; font-size: 28px; font-weight: 700; }
   .panel p { margin: 0; font-size: 15px; line-height: 1.6; color: var(--muted); }
   .panel p strong { color: var(--text); overflow-wrap: anywhere; }
   .icon-circle { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
@@ -147,8 +147,12 @@
   @media (max-width: 640px) {
     .hero img { height: 190px; }
     .hero.small img { height: 130px; }
-    .title-box h1 { font-size: 22px; }
+    .title-box h1 { font-size: 26px; }
     .user .email { display: none; }
+    .topbar .wrap { flex-wrap: nowrap; padding-left: 16px; padding-right: 16px; gap: 8px; }
+    .topbar-right, .user { gap: 6px; }
+    .admin-link { display: none; }
+    .brand { font-size: 15px; letter-spacing: 1.5px; }
     .legend { padding-bottom: 8px; }
   }
 </style>
