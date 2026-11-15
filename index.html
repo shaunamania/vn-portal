@@ -315,8 +315,10 @@
     </div>
     <div class="field">
       <label for="f-cat">Category</label>
-      <input id="f-cat" type="text" list="cat-list" maxlength="40" autocomplete="off" placeholder="Pick one or type a new category">
-      <datalist id="cat-list"></datalist>
+      <div class="row2">
+        <select id="f-cat"></select>
+        <input id="f-cat-new" type="text" maxlength="40" autocomplete="off" placeholder="New category name" aria-label="New category name" hidden>
+      </div>
     </div>
     <div class="field">
       <label for="f-name">Name</label>
@@ -616,14 +618,28 @@
   var deleteTimer;
 
   function categoriesFor(tabName) {
+    var fromServer = state.data.editor && state.data.editor.categories && state.data.editor.categories[tabName];
+    var cats = fromServer ? fromServer.slice() : [];
     var tab = (state.data.tabs || []).filter(function (t) { return t.name === tabName; })[0];
-    var cats = [];
     (tab ? tab.items : []).forEach(function (i) { if (cats.indexOf(i.category) < 0) cats.push(i.category); });
     return cats;
   }
-  function fillCategoryList() {
-    var list = $('cat-list'); list.textContent = '';
-    categoriesFor(selectedTab()).forEach(function (c) { var o = el('option'); o.value = c; list.appendChild(o); });
+  /** Rebuilds the Category dropdown for the selected tab, keeping `want` selected when possible. */
+  function fillCategoryList(want) {
+    var sel = $('f-cat'), input = $('f-cat-new');
+    if (want === undefined) want = selectedCategory();
+    var cats = categoriesFor(selectedTab());
+    sel.textContent = '';
+    var ph = el('option', null, cats.length ? 'Choose a category' : 'No categories yet'); ph.value = ''; ph.disabled = true;
+    sel.appendChild(ph);
+    cats.forEach(function (c) { var o = el('option', null, c); o.value = c; sel.appendChild(o); });
+    var n = el('option', null, '+ New category…'); n.value = '__new__'; sel.appendChild(n);
+    if (want && cats.indexOf(want) >= 0) { sel.value = want; input.hidden = true; }
+    else if (want) { sel.value = '__new__'; input.value = want; input.hidden = false; }
+    else { sel.value = ''; input.value = ''; input.hidden = true; }
+  }
+  function selectedCategory() {
+    return $('f-cat').value === '__new__' ? $('f-cat-new').value.trim() : $('f-cat').value;
   }
   function selectedTab() {
     return $('f-tab').value === '__new__' ? $('f-tab-new').value.trim() : $('f-tab').value;
@@ -642,11 +658,11 @@
     if (ed.canCreateTab) { var n = el('option', null, '+ New tab…'); n.value = '__new__'; sel.appendChild(n); }
     sel.value = startTab || tabs[0] || '';
     $('f-tab-new').value = ''; $('f-tab-new').hidden = true;
-    $('f-cat').value = item ? item.category : (state.cat !== 'All' ? state.cat : '');
+    $('f-cat-new').value = '';
     $('f-name').value = item ? item.name : '';
     $('f-url').value = item && item.url ? item.url : '';
     $('f-desc').value = item ? (item.description || '') : '';
-    fillCategoryList();
+    fillCategoryList(item ? item.category : (state.cat !== 'All' ? state.cat : ''));
 
     var box = $('f-vis'); box.textContent = '';
     var choices = ed.visibilityChoices;
@@ -698,7 +714,7 @@
     var link = {
       id: editing ? editing.id : '',
       tab: tab,
-      category: $('f-cat').value.trim(),
+      category: selectedCategory(),
       name: $('f-name').value.trim(),
       url: $('f-url').value.trim(),
       description: $('f-desc').value.trim()
@@ -706,7 +722,7 @@
     var checked = document.querySelector('#f-vis input[name="vis"]:checked');
     link.visibility = checked ? checked.value : 'All';
     if (!link.tab) return setError('Please choose a tab' + ($('f-tab').value === '__new__' ? ' name.' : '.'));
-    if (!link.category) return setError('Please enter a category.');
+    if (!link.category) return setError($('f-cat').value === '__new__' ? 'Please type the new category name.' : 'Please choose a category.');
     if (!link.name) return setError('Please enter a name.');
     if (link.url && !/^https?:\/\/[^\s]+$/i.test(link.url)) return setError('The link must start with http:// or https:// and contain no spaces.');
     setError(''); setBusy(true, 'Saving…');
@@ -757,9 +773,17 @@
     var isNew = $('f-tab').value === '__new__';
     $('f-tab-new').hidden = !isNew;
     if (isNew) $('f-tab-new').focus();
-    fillCategoryList();
+    // Keep the chosen category if the new tab has it (or if it was a newly typed one); otherwise start over.
+    var cur = selectedCategory();
+    var keep = $('f-cat').value === '__new__' || categoriesFor(selectedTab()).indexOf(cur) >= 0;
+    fillCategoryList(keep ? cur : '');
   });
-  $('f-tab-new').addEventListener('input', fillCategoryList);
+  $('f-tab-new').addEventListener('input', function () { fillCategoryList(); });
+  $('f-cat').addEventListener('change', function () {
+    var isNew = $('f-cat').value === '__new__';
+    $('f-cat-new').hidden = !isNew;
+    if (isNew) $('f-cat-new').focus();
+  });
   $('editor').addEventListener('click', function (e) { if (e.target === $('editor')) closeEditor(); }); // click on backdrop
 
   // ---- Theme (dark by default, remembered in this browser) ----
