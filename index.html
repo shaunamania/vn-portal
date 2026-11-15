@@ -129,11 +129,12 @@
   .card .name { font-weight: 600; font-size: 15px; line-height: 1.35; overflow-wrap: anywhere; }
   .card .sub { font-size: 13px; color: var(--muted); line-height: 1.4; overflow-wrap: anywhere; }
   .card .foot { margin-top: auto; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-height: 26px; }
-  .card .top .icons { display: flex; align-items: center; gap: 6px; flex: none; margin: -6px -6px 0 0; }
-  .card .top .icons > svg { margin: 0 6px; }
+  .card .top .icons { display: flex; align-items: center; gap: 6px; flex: none; margin: -4px -6px 0 0; }
   .vis { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 500; padding: 2px 9px; border-radius: 999px; color: var(--muted-2); border: 1px solid var(--line-2); }
-  .edit-btn { position: relative; z-index: 2; flex: none; width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--line-2); background: var(--surface); color: var(--muted); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
-  .edit-btn:hover { color: var(--accent); border-color: var(--accent); }
+  .edit-btn { position: relative; z-index: 2; flex: none; width: 26px; height: 26px; border-radius: 6px; border: 1px solid transparent; background: transparent; color: var(--muted); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
+  .edit-btn svg { width: 14px; height: 14px; }
+  .edit-btn:hover { color: var(--accent); border-color: var(--line-2); background: var(--surface-2); }
+  .edit-btn::after { content: ''; position: absolute; inset: -6px; } /* larger tap area than it looks */
   .btn.add { gap: 6px; padding: 0 16px; }
   .btn.danger { color: #FF8080; border-color: #6B2B2B; }
   [data-theme="light"] .btn.danger { color: #B42318; border-color: #F1B8B2; }
@@ -498,7 +499,6 @@
     if (text != null) n.textContent = text;
     return n;
   }
-  var ARROW = '<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:2px"><path d="M7 17L17 7"></path><path d="M8 7h9v9"></path></svg>';
   function safeUrl(u) { return typeof u === 'string' && /^https?:\/\//i.test(u) ? u : null; }
 
   function renderPortal() {
@@ -598,7 +598,6 @@
       b.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); openEditor(it); });
       icons.appendChild(b);
     }
-    if (url) icons.insertAdjacentHTML('beforeend', ARROW);
     if (icons.childNodes.length) top.appendChild(icons);
     c.appendChild(top);
     if (it.description && it.description !== it.name) c.appendChild(el('span', 'sub', it.description));
