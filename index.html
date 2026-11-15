@@ -119,12 +119,47 @@
   section.group h2 { margin: 0; font-family: 'Saira Condensed', 'Noto Sans TC', sans-serif; font-size: 21px; font-weight: 700; letter-spacing: .3px; display: flex; align-items: baseline; gap: 8px; }
   section.group h2 small { font-family: Saira, sans-serif; font-size: 13px; font-weight: 500; color: var(--muted); }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 12px; }
-  .card { display: flex; flex-direction: column; gap: 10px; padding: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; min-height: 108px; transition: border-color .15s, background .15s; }
-  a.card:hover { border-color: var(--accent); background: var(--surface-2); color: var(--text); }
+  .card { position: relative; display: flex; flex-direction: column; gap: 10px; padding: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; min-height: 108px; transition: border-color .15s, background .15s; }
+  .card.has-link:hover { border-color: var(--accent); background: var(--surface-2); }
+  .card-link { color: inherit; }
+  .card-link::after { content: ''; position: absolute; inset: 0; border-radius: 12px; } /* whole card is clickable */
+  .card-link:focus-visible { outline: none; }
+  .card:has(.card-link:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
   .card .top { display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; }
   .card .name { font-weight: 600; font-size: 15px; line-height: 1.35; overflow-wrap: anywhere; }
   .card .sub { font-size: 13px; color: var(--muted); line-height: 1.4; overflow-wrap: anywhere; }
-  .card .foot { margin-top: auto; }
+  .card .foot { margin-top: auto; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-height: 26px; }
+  .vis { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 500; padding: 2px 9px; border-radius: 999px; color: var(--muted-2); border: 1px solid var(--line-2); }
+  .edit-btn { position: relative; z-index: 2; margin-left: auto; width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--line-2); background: var(--surface); color: var(--muted); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
+  .edit-btn:hover { color: var(--accent); border-color: var(--accent); }
+  .btn.add { gap: 6px; padding: 0 16px; }
+  .btn.danger { color: #FF8080; border-color: #6B2B2B; }
+  [data-theme="light"] .btn.danger { color: #B42318; border-color: #F1B8B2; }
+  .btn:disabled { opacity: .6; cursor: default; }
+
+  /* Add / edit dialog */
+  dialog#editor { width: min(560px, calc(100vw - 32px)); max-height: calc(100vh - 32px); padding: 0; border: 1px solid var(--line-2); border-radius: 16px; background: var(--surface); color: var(--text); box-shadow: 0 24px 64px rgba(0, 0, 0, .5); }
+  dialog#editor::backdrop { background: rgba(5, 6, 8, .65); }
+  #ed-form { display: flex; flex-direction: column; gap: 16px; padding: 24px; }
+  #ed-form h2 { margin: 0; font-family: 'Saira Condensed', 'Noto Sans TC', sans-serif; font-size: 26px; }
+  .field { display: flex; flex-direction: column; gap: 6px; border: 0; margin: 0; padding: 0; min-width: 0; }
+  .field label, .field legend { font-size: 13px; font-weight: 600; color: var(--muted-2); padding: 0; }
+  .field .opt { font-weight: 400; color: var(--muted); }
+  .field input, .field select { height: 44px; padding: 0 12px; border: 1px solid var(--line-2); border-radius: 10px; background: var(--bg); color: var(--text); font-size: 15px; font-family: inherit; width: 100%; }
+  .field input:focus, .field select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .field .row2 { display: flex; gap: 8px; }
+  .vis-options { display: flex; flex-direction: column; gap: 8px; margin-top: 2px; }
+  .vis-opt { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border: 1px solid var(--line-2); border-radius: 10px; cursor: pointer; }
+  .vis-opt:has(input:checked) { border-color: var(--accent); background: var(--surface-2); }
+  .vis-opt input { margin: 3px 0 0; accent-color: var(--accent); width: 16px; height: 16px; flex: none; }
+  .vis-opt b { display: block; font-size: 14px; }
+  .vis-opt small { color: var(--muted); font-size: 13px; }
+  .vis-note { margin: 0; font-size: 14px; color: var(--muted); }
+  .ed-meta { margin: 0; font-size: 12px; color: var(--muted); line-height: 1.5; overflow-wrap: anywhere; }
+  .ed-error { margin: 0; font-size: 14px; color: #FF8080; }
+  [data-theme="light"] .ed-error { color: #B42318; }
+  .ed-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 50; background: #F2F3F5; color: #0A0B0E; font-weight: 600; font-size: 14px; padding: 12px 18px; border-radius: 10px; box-shadow: 0 8px 24px rgba(0, 0, 0, .35); max-width: calc(100vw - 32px); }
   .card.nolink { background: var(--nolink-bg); border-style: dashed; border-color: var(--line-2); }
   .card.nolink .name { color: var(--muted-2); }
   .badge { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; padding: 3px 9px; border-radius: 999px; }
@@ -255,15 +290,61 @@
         <input type="search" id="search" placeholder="Search budget, KPI, MDF…" autocomplete="off">
       </label>
       <span class="result-count" id="result-count" aria-live="polite"></span>
+      <button class="btn primary add" type="button" id="add-btn">
+        <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>Add link
+      </button>
     </div>
     <div class="pills" id="pills"></div>
     <div id="groups"></div>
     <footer class="foot">
-      <span>Content syncs from the GBT VN Team Portal Google Sheet.</span>
+      <span>Links are shared by the team. You can edit the ones you added.</span>
       <span>Can’t open a file? Ask its owner for access in Google Drive. · <a href="privacy.html" style="color: var(--muted); text-decoration: underline">Privacy</a></span>
     </footer>
   </div>
 </main>
+
+<dialog id="editor" aria-labelledby="ed-title">
+  <form id="ed-form" novalidate>
+    <h2 id="ed-title">Add link</h2>
+    <div class="field">
+      <label for="f-tab">Tab</label>
+      <div class="row2">
+        <select id="f-tab"></select>
+        <input id="f-tab-new" type="text" maxlength="40" placeholder="New tab name" aria-label="New tab name" hidden>
+      </div>
+    </div>
+    <div class="field">
+      <label for="f-cat">Category</label>
+      <input id="f-cat" type="text" list="cat-list" maxlength="40" autocomplete="off" placeholder="Pick one or type a new category">
+      <datalist id="cat-list"></datalist>
+    </div>
+    <div class="field">
+      <label for="f-name">Name</label>
+      <input id="f-name" type="text" maxlength="120" autocomplete="off" placeholder="e.g. Q1 MKT Budget">
+    </div>
+    <div class="field">
+      <label for="f-url">Link URL</label>
+      <input id="f-url" type="url" inputmode="url" maxlength="2000" autocomplete="off" placeholder="https://">
+    </div>
+    <div class="field">
+      <label for="f-desc">Description <span class="opt">(optional)</span></label>
+      <input id="f-desc" type="text" maxlength="300" autocomplete="off" placeholder="Shown under the name">
+    </div>
+    <fieldset class="field">
+      <legend>Who can see it</legend>
+      <div class="vis-options" id="f-vis"></div>
+    </fieldset>
+    <p class="ed-meta" id="ed-meta" hidden></p>
+    <p class="ed-error" id="ed-error" role="alert" hidden></p>
+    <div class="ed-actions">
+      <button type="button" class="btn danger" id="ed-delete" hidden>Delete</button>
+      <span style="flex: 1"></span>
+      <button type="button" class="btn" id="ed-cancel">Cancel</button>
+      <button type="submit" class="btn primary" id="ed-save">Save</button>
+    </div>
+  </form>
+</dialog>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 <script>
 (function () {
@@ -272,6 +353,7 @@
   var TOKEN_KEY = 'gbtvn_portal_token';
   var state = { data: null, tab: 0, cat: 'All', query: '' };
   var gsiReady = false;
+  var pendingToken = null; // waiting for a fresh sign-in token (session expired while editing)
 
   var $ = function (id) { return document.getElementById(id); };
   var VIEWS = ['view-loading', 'view-signin', 'view-noaccess', 'view-error', 'view-portal'];
@@ -305,7 +387,11 @@
     if (!(window.google && google.accounts && google.accounts.id)) return false;
     google.accounts.id.initialize({
       client_id: CFG.CLIENT_ID,
-      callback: function (resp) { saveToken(resp.credential); loadPortal(resp.credential); },
+      callback: function (resp) {
+        saveToken(resp.credential);
+        if (pendingToken) { var p = pendingToken; pendingToken = null; clearTimeout(p.timer); p.resolve(resp.credential); return; }
+        loadPortal(resp.credential);
+      },
       auto_select: true,
       cancel_on_tap_outside: false,
       ux_mode: 'popup'
@@ -356,6 +442,50 @@
     show('view-noaccess');
   }
   function showError(msg) { $('error-text').textContent = msg; show('view-error'); }
+
+  /** A valid sign-in token; asks Google for a new one if the current one has expired. */
+  function freshToken() {
+    var t = loadToken();
+    if (tokenValid(t)) return Promise.resolve(t);
+    return new Promise(function (resolve, reject) {
+      if (!initGsi()) { reject(new Error('signin')); return; }
+      pendingToken = { resolve: resolve, reject: reject, timer: setTimeout(function () {
+        pendingToken = null; reject(new Error('signin'));
+      }, 45000) };
+      google.accounts.id.prompt();
+    });
+  }
+
+  /** Calls the backend with a fresh token; retries once if the token was rejected. */
+  function api(payload, retried) {
+    return freshToken().then(function (tok) {
+      return fetch(CFG.API_URL, { method: 'POST', body: JSON.stringify(Object.assign({ idToken: tok }, payload)) });
+    }).then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    }).then(function (res) {
+      if (res.error === 'invalid_token' && !retried) { clearToken(); return api(payload, true); }
+      return res;
+    });
+  }
+
+  function applyData(res, preferTab) {
+    var keep = preferTab || currentTabName();
+    state.data = res;
+    var idx = (res.tabs || []).map(function (t) { return t.name; }).indexOf(keep);
+    state.tab = idx >= 0 ? idx : 0;
+    renderTabs(); renderBody();
+  }
+  function currentTabName() {
+    var t = state.data && state.data.tabs && state.data.tabs[state.tab];
+    return t ? t.name : null;
+  }
+
+  var toastTimer;
+  function toast(msg) {
+    var t = $('toast'); t.textContent = msg; t.hidden = false;
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.hidden = true; }, 3500);
+  }
 
   // ---- Rendering (all text via textContent, never innerHTML) ----
   function el(tag, cls, text) {
@@ -416,7 +546,7 @@
     var shown = tab.items.filter(function (it) {
       if (state.cat !== 'All' && it.category !== state.cat) return false;
       if (!q) return true;
-      return [it.category, it.name, it.linkText, it.kind].join(' ').toLowerCase().indexOf(q) >= 0;
+      return [it.category, it.name, it.description, it.kind].join(' ').toLowerCase().indexOf(q) >= 0;
     });
     $('result-count').textContent = shown.length + (shown.length === 1 ? ' link' : ' links');
 
@@ -439,26 +569,198 @@
     });
   }
 
+  var EDIT_ICON = '<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>';
+  var LOCK_ICON = '<svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>';
+  var VIS_LABEL = { All: 'Everyone', HQ: 'HQ + Admin', Admin: 'Admin only' };
+
   function card(it) {
     var url = safeUrl(it.url);
-    if (!url) {
-      var n = el('div', 'card nolink');
-      n.appendChild(el('span', 'name', it.name));
-      n.appendChild(el('span', 'sub', 'No link added yet'));
-      return n;
-    }
-    var a = el('a', 'card');
-    a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+    var c = el('div', 'card ' + (url ? 'has-link' : 'nolink'));
     var top = el('div', 'top');
-    top.appendChild(el('span', 'name', it.name));
-    top.insertAdjacentHTML('beforeend', ARROW);
-    a.appendChild(top);
-    if (it.linkText && it.linkText !== it.name) a.appendChild(el('span', 'sub', it.linkText));
+    if (url) {
+      var a = el('a', 'name card-link', it.name);
+      a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      top.appendChild(a);
+      top.insertAdjacentHTML('beforeend', ARROW);
+    } else {
+      top.appendChild(el('span', 'name', it.name));
+    }
+    c.appendChild(top);
+    if (it.description && it.description !== it.name) c.appendChild(el('span', 'sub', it.description));
+    else if (!url) c.appendChild(el('span', 'sub', 'No link added yet'));
     var foot = el('div', 'foot');
-    foot.appendChild(el('span', 'badge ' + (it.group === 'google' ? 'g' : 'x'), it.kind || 'Link'));
-    a.appendChild(foot);
-    return a;
+    if (url) foot.appendChild(el('span', 'badge ' + (it.group === 'google' ? 'g' : 'x'), it.kind || 'Link'));
+    var role = state.data.user && state.data.user.role;
+    if (role !== 'VN team' && it.visibility && it.visibility !== 'All') {
+      var v = el('span', 'vis');
+      v.insertAdjacentHTML('beforeend', LOCK_ICON);
+      v.appendChild(document.createTextNode(VIS_LABEL[it.visibility]));
+      foot.appendChild(v);
+    }
+    if (it.canEdit) {
+      var b = el('button', 'edit-btn');
+      b.type = 'button';
+      b.setAttribute('aria-label', 'Edit ' + it.name);
+      b.title = 'Edit';
+      b.insertAdjacentHTML('beforeend', EDIT_ICON);
+      b.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); openEditor(it); });
+      foot.appendChild(b);
+    }
+    c.appendChild(foot);
+    return c;
   }
+
+  // ---- Add / edit dialog ----
+  var editing = null;      // the item being edited, or null when adding
+  var deleteArmed = false;
+  var deleteTimer;
+
+  function categoriesFor(tabName) {
+    var tab = (state.data.tabs || []).filter(function (t) { return t.name === tabName; })[0];
+    var cats = [];
+    (tab ? tab.items : []).forEach(function (i) { if (cats.indexOf(i.category) < 0) cats.push(i.category); });
+    return cats;
+  }
+  function fillCategoryList() {
+    var list = $('cat-list'); list.textContent = '';
+    categoriesFor(selectedTab()).forEach(function (c) { var o = el('option'); o.value = c; list.appendChild(o); });
+  }
+  function selectedTab() {
+    return $('f-tab').value === '__new__' ? $('f-tab-new').value.trim() : $('f-tab').value;
+  }
+  function setError(msg) { var e = $('ed-error'); e.textContent = msg || ''; e.hidden = !msg; }
+
+  function openEditor(item) {
+    editing = item || null;
+    var ed = state.data.editor;
+    $('ed-title').textContent = item ? 'Edit link' : 'Add link';
+    var sel = $('f-tab'); sel.textContent = '';
+    var tabs = ed.tabs.slice();
+    var startTab = item ? tabOfItem(item) : currentTabName();
+    if (startTab && tabs.indexOf(startTab) < 0) tabs.push(startTab);
+    tabs.forEach(function (t) { var o = el('option', null, t); o.value = t; sel.appendChild(o); });
+    if (ed.canCreateTab) { var n = el('option', null, '+ New tab…'); n.value = '__new__'; sel.appendChild(n); }
+    sel.value = startTab || tabs[0] || '';
+    $('f-tab-new').value = ''; $('f-tab-new').hidden = true;
+    $('f-cat').value = item ? item.category : (state.cat !== 'All' ? state.cat : '');
+    $('f-name').value = item ? item.name : '';
+    $('f-url').value = item && item.url ? item.url : '';
+    $('f-desc').value = item ? (item.description || '') : '';
+    fillCategoryList();
+
+    var box = $('f-vis'); box.textContent = '';
+    var choices = ed.visibilityChoices;
+    if (choices.length === 1) {
+      box.appendChild(el('p', 'vis-note', 'Links you add are visible to everyone on the portal.'));
+    } else {
+      var current = item ? item.visibility : 'HQ';
+      if (choices.indexOf(current) < 0) current = choices[0];
+      var desc = { All: 'VN team, HQ and Admin', HQ: 'HQ and Admin only', Admin: 'Only Admins' };
+      choices.slice().reverse().forEach(function (v) {
+        var lab = el('label', 'vis-opt');
+        var r = el('input'); r.type = 'radio'; r.name = 'vis'; r.value = v; r.checked = v === current;
+        var txt = el('span'); txt.appendChild(el('b', null, VIS_LABEL[v])); txt.appendChild(el('small', null, desc[v]));
+        lab.appendChild(r); lab.appendChild(txt); box.appendChild(lab);
+      });
+    }
+
+    var meta = $('ed-meta');
+    if (item && item.addedBy) {
+      meta.textContent = 'Added by ' + item.addedBy + (item.created ? ' on ' + item.created : '') +
+        (item.updated ? ' · Last updated' + (item.updatedBy ? ' by ' + item.updatedBy : '') + ' on ' + item.updated : '');
+      meta.hidden = false;
+    } else { meta.hidden = true; }
+    $('ed-delete').hidden = !item;
+    disarmDelete();
+    setError('');
+    setBusy(false);
+    $('editor').showModal();
+    $(item ? 'f-name' : (sel.value ? 'f-cat' : 'f-tab')).focus();
+  }
+  function tabOfItem(item) {
+    var found = null;
+    (state.data.tabs || []).forEach(function (t) { if (t.items.indexOf(item) >= 0) found = t.name; });
+    return found;
+  }
+  function closeEditor() { disarmDelete(); $('editor').close(); }
+  function setBusy(on, label) {
+    ['ed-save', 'ed-cancel', 'ed-delete'].forEach(function (id) { $(id).disabled = on; });
+    $('ed-save').textContent = on && label ? label : 'Save';
+  }
+  function disarmDelete() {
+    deleteArmed = false; clearTimeout(deleteTimer);
+    $('ed-delete').textContent = 'Delete';
+  }
+
+  function submitEditor(e) {
+    e.preventDefault();
+    var tab = selectedTab();
+    var link = {
+      id: editing ? editing.id : '',
+      tab: tab,
+      category: $('f-cat').value.trim(),
+      name: $('f-name').value.trim(),
+      url: $('f-url').value.trim(),
+      description: $('f-desc').value.trim()
+    };
+    var checked = document.querySelector('#f-vis input[name="vis"]:checked');
+    link.visibility = checked ? checked.value : 'All';
+    if (!link.tab) return setError('Please choose a tab' + ($('f-tab').value === '__new__' ? ' name.' : '.'));
+    if (!link.category) return setError('Please enter a category.');
+    if (!link.name) return setError('Please enter a name.');
+    if (link.url && !/^https?:\/\/[^\s]+$/i.test(link.url)) return setError('The link must start with http:// or https:// and contain no spaces.');
+    setError(''); setBusy(true, 'Saving…');
+    api({ action: 'save', link: link }).then(function (res) {
+      if (!res.ok) { setBusy(false); return handleApiError(res); }
+      closeEditor();
+      applyData(res, link.tab);
+      toast(res.message || 'Saved.');
+    }).catch(function (err) {
+      setBusy(false);
+      setError(err && err.message === 'signin'
+        ? 'Your sign-in has expired. Copy your changes, then sign out and sign in again.'
+        : 'Couldn’t reach the portal. Check your connection and try again.');
+    });
+  }
+
+  function deleteFromEditor() {
+    if (!editing) return;
+    if (!deleteArmed) {
+      deleteArmed = true;
+      $('ed-delete').textContent = 'Click again to delete';
+      deleteTimer = setTimeout(disarmDelete, 4000);
+      return;
+    }
+    disarmDelete(); setError(''); setBusy(true, 'Deleting…');
+    api({ action: 'delete', id: editing.id }).then(function (res) {
+      if (!res.ok) { setBusy(false); return handleApiError(res); }
+      closeEditor();
+      applyData(res);
+      toast(res.message || 'Deleted.');
+    }).catch(function () {
+      setBusy(false);
+      setError('Couldn’t reach the portal. Check your connection and try again.');
+    });
+  }
+
+  function handleApiError(res) {
+    if (res.error === 'no_access') { closeEditor(); clearToken(); showNoAccess(res.email); return; }
+    if (res.error === 'invalid_token') { setError('Your sign-in has expired. Copy your changes, then sign out and sign in again.'); return; }
+    setError(res.message || 'Something went wrong (' + (res.error || 'unknown') + ').');
+  }
+
+  $('add-btn').addEventListener('click', function () { openEditor(null); });
+  $('ed-form').addEventListener('submit', submitEditor);
+  $('ed-cancel').addEventListener('click', closeEditor);
+  $('ed-delete').addEventListener('click', deleteFromEditor);
+  $('f-tab').addEventListener('change', function () {
+    var isNew = $('f-tab').value === '__new__';
+    $('f-tab-new').hidden = !isNew;
+    if (isNew) $('f-tab-new').focus();
+    fillCategoryList();
+  });
+  $('f-tab-new').addEventListener('input', fillCategoryList);
+  $('editor').addEventListener('click', function (e) { if (e.target === $('editor')) closeEditor(); }); // click on backdrop
 
   // ---- Theme (dark by default, remembered in this browser) ----
   function currentTheme() { return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark'; }
