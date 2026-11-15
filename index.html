@@ -330,7 +330,7 @@
       <label for="f-desc">Description <span class="opt">(optional)</span></label>
       <input id="f-desc" type="text" maxlength="300" autocomplete="off" placeholder="Shown under the name">
     </div>
-    <fieldset class="field">
+    <fieldset class="field" id="f-vis-wrap">
       <legend>Who can see it</legend>
       <div class="vis-options" id="f-vis"></div>
     </fieldset>
@@ -650,9 +650,9 @@
 
     var box = $('f-vis'); box.textContent = '';
     var choices = ed.visibilityChoices;
-    if (choices.length === 1) {
-      box.appendChild(el('p', 'vis-note', 'Links you add are visible to everyone on the portal.'));
-    } else {
+    // Only one possible choice (VN team): hide the whole section; the server sets "All" anyway.
+    $('f-vis-wrap').hidden = choices.length === 1;
+    if (choices.length > 1) {
       var current = item ? item.visibility : 'HQ';
       if (choices.indexOf(current) < 0) current = choices[0];
       var desc = { All: 'VN team, HQ and Admin', HQ: 'HQ and Admin only', Admin: 'Only Admins' };
