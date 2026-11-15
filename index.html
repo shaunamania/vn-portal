@@ -129,8 +129,10 @@
   .card .name { font-weight: 600; font-size: 15px; line-height: 1.35; overflow-wrap: anywhere; }
   .card .sub { font-size: 13px; color: var(--muted); line-height: 1.4; overflow-wrap: anywhere; }
   .card .foot { margin-top: auto; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-height: 26px; }
+  .card .top .icons { display: flex; align-items: center; gap: 6px; flex: none; margin: -6px -6px 0 0; }
+  .card .top .icons > svg { margin: 0 6px; }
   .vis { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 500; padding: 2px 9px; border-radius: 999px; color: var(--muted-2); border: 1px solid var(--line-2); }
-  .edit-btn { position: relative; z-index: 2; margin-left: auto; width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--line-2); background: var(--surface); color: var(--muted); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
+  .edit-btn { position: relative; z-index: 2; flex: none; width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--line-2); background: var(--surface); color: var(--muted); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
   .edit-btn:hover { color: var(--accent); border-color: var(--accent); }
   .btn.add { gap: 6px; padding: 0 16px; }
   .btn.danger { color: #FF8080; border-color: #6B2B2B; }
@@ -579,25 +581,13 @@
     var url = safeUrl(it.url);
     var c = el('div', 'card ' + (url ? 'has-link' : 'nolink'));
     var top = el('div', 'top');
+    var icons = el('div', 'icons');
     if (url) {
       var a = el('a', 'name card-link', it.name);
       a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
       top.appendChild(a);
-      top.insertAdjacentHTML('beforeend', ARROW);
     } else {
       top.appendChild(el('span', 'name', it.name));
-    }
-    c.appendChild(top);
-    if (it.description && it.description !== it.name) c.appendChild(el('span', 'sub', it.description));
-    else if (!url) c.appendChild(el('span', 'sub', 'No link added yet'));
-    var foot = el('div', 'foot');
-    if (url) foot.appendChild(el('span', 'badge ' + (it.group === 'google' ? 'g' : 'x'), it.kind || 'Link'));
-    var role = state.data.user && state.data.user.role;
-    if (role !== 'VN team' && it.visibility && it.visibility !== 'All') {
-      var v = el('span', 'vis');
-      v.insertAdjacentHTML('beforeend', LOCK_ICON);
-      v.appendChild(document.createTextNode(VIS_LABEL[it.visibility]));
-      foot.appendChild(v);
     }
     if (it.canEdit) {
       var b = el('button', 'edit-btn');
@@ -606,9 +596,24 @@
       b.title = 'Edit';
       b.insertAdjacentHTML('beforeend', EDIT_ICON);
       b.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); openEditor(it); });
-      foot.appendChild(b);
+      icons.appendChild(b);
     }
-    c.appendChild(foot);
+    if (url) icons.insertAdjacentHTML('beforeend', ARROW);
+    if (icons.childNodes.length) top.appendChild(icons);
+    c.appendChild(top);
+    if (it.description && it.description !== it.name) c.appendChild(el('span', 'sub', it.description));
+    else if (!url) c.appendChild(el('span', 'sub', 'No link added yet'));
+    var foot = el('div', 'foot');
+    var chips = foot;
+    if (url) chips.appendChild(el('span', 'badge ' + (it.group === 'google' ? 'g' : 'x'), it.kind || 'Link'));
+    var role = state.data.user && state.data.user.role;
+    if (role !== 'VN team' && it.visibility && it.visibility !== 'All') {
+      var v = el('span', 'vis');
+      v.insertAdjacentHTML('beforeend', LOCK_ICON);
+      v.appendChild(document.createTextNode(VIS_LABEL[it.visibility]));
+      chips.appendChild(v);
+    }
+    if (foot.childNodes.length) c.appendChild(foot);
     return c;
   }
 
