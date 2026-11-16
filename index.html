@@ -144,6 +144,9 @@
   dialog#editor { width: min(560px, calc(100vw - 32px)); max-height: calc(100vh - 32px); padding: 0; border: 1px solid var(--line-2); border-radius: 16px; background: var(--surface); color: var(--text); box-shadow: 0 24px 64px rgba(0, 0, 0, .5); }
   dialog#editor::backdrop { background: rgba(5, 6, 8, .65); }
   #ed-form { display: flex; flex-direction: column; gap: 16px; padding: 24px; }
+  .ed-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .ed-close { width: 36px; height: 36px; flex: none; border-radius: 8px; border: 1px solid var(--line-2); background: transparent; color: var(--muted-2); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; margin: -4px -8px 0 0; }
+  .ed-close:hover { color: var(--accent); border-color: var(--accent); }
   #ed-form h2 { margin: 0; font-family: 'Saira Condensed', 'Noto Sans TC', sans-serif; font-size: 26px; }
   .field { display: flex; flex-direction: column; gap: 6px; border: 0; margin: 0; padding: 0; min-width: 0; }
   .field label, .field legend { font-size: 13px; font-weight: 600; color: var(--muted-2); padding: 0; }
@@ -306,9 +309,14 @@
   </div>
 </main>
 
-<dialog id="editor" aria-labelledby="ed-title">
+<dialog id="editor" aria-labelledby="ed-title" closedby="none">
   <form id="ed-form" novalidate>
-    <h2 id="ed-title">Add link</h2>
+    <div class="ed-head">
+      <h2 id="ed-title">Add link</h2>
+      <button type="button" class="ed-close" id="ed-close" aria-label="Close" title="Close">
+        <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+      </button>
+    </div>
     <div class="field">
       <label for="f-tab">Tab</label>
       <div class="row2">
@@ -395,6 +403,7 @@
       callback: function (resp) {
         saveToken(resp.credential);
         if (pendingToken) { var p = pendingToken; pendingToken = null; clearTimeout(p.timer); p.resolve(resp.credential); return; }
+        if ($('editor').open) return; // a background re-sign-in must never reload the page under an open editor
         loadPortal(resp.credential);
       },
       auto_select: true,
@@ -788,7 +797,9 @@
     $('f-cat-new').hidden = !isNew;
     if (isNew) $('f-cat-new').focus();
   });
-  $('editor').addEventListener('click', function (e) { if (e.target === $('editor')) closeEditor(); }); // click on backdrop
+  $('ed-close').addEventListener('click', closeEditor);
+  // The dialog only closes through the X / Cancel buttons: ignore Esc and clicks outside it.
+  $('editor').addEventListener('cancel', function (e) { e.preventDefault(); });
 
   // ---- Theme (dark by default, remembered in this browser) ----
   function currentTheme() { return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark'; }
