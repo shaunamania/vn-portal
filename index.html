@@ -140,6 +140,17 @@
   [data-theme="light"] .btn.danger { color: #B42318; border-color: #F1B8B2; }
   .btn:disabled { opacity: .6; cursor: default; }
 
+  /* Arrange mode (Admin): drag tabs and category buttons */
+  .btn.arrange { gap: 6px; padding: 0 14px; }
+  .btn.arrange[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+  .arrange-bar { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1px dashed var(--accent); border-radius: 10px; font-size: 14px; color: var(--muted-2); }
+  .arranging [data-sortable] { cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; display: inline-flex; align-items: center; gap: 6px; }
+  .arranging .pill[data-sortable] { border-style: dashed; }
+  .arranging .tab[data-sortable] { outline: 1px dashed var(--line-2); outline-offset: -6px; border-radius: 8px; }
+  [data-sortable] .grip { display: none; color: var(--muted); }
+  .arranging [data-sortable] .grip { display: inline-block; }
+  .dragging { opacity: .55; cursor: grabbing !important; outline: 2px dashed var(--accent) !important; }
+
   /* Add / edit dialog */
   dialog#editor { width: min(560px, calc(100vw - 32px)); max-height: calc(100vh - 32px); padding: 0; border: 1px solid var(--line-2); border-radius: 16px; background: var(--surface); color: var(--text); box-shadow: 0 24px 64px rgba(0, 0, 0, .5); }
   dialog#editor::backdrop { background: rgba(5, 6, 8, .65); }
@@ -296,10 +307,14 @@
         <input type="search" id="search" placeholder="Search budget, KPI, MDF…" autocomplete="off">
       </label>
       <span class="result-count" id="result-count" aria-live="polite"></span>
+      <button class="btn arrange" type="button" id="arrange-btn" aria-pressed="false" hidden title="Drag tabs and categories into your own order">
+        <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16M7 4 4 7M7 4l3 3M17 20V4m0 16-3-3m3 3 3-3"></path></svg><span id="arrange-label">Arrange</span>
+      </button>
       <button class="btn primary add" type="button" id="add-btn">
         <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>Add link
       </button>
     </div>
+    <div class="arrange-bar" id="arrange-bar" role="status" hidden>Drag the tabs and category buttons to change their order (or focus one and use ← →). Changes save automatically and everyone sees the new order.</div>
     <div class="pills" id="pills"></div>
     <div id="groups"></div>
     <footer class="foot">
@@ -364,7 +379,7 @@
   'use strict';
   var CFG = window.PORTAL_CONFIG;
   var TOKEN_KEY = 'gbtvn_portal_token';
-  var state = { data: null, tab: 0, cat: 'All', query: '' };
+  var state = { data: null, tab: 0, cat: 'All', query: '', arranging: false };
   var gsiReady = false;
   var pendingToken = null; // waiting for a fresh sign-in token (session expired while editing)
 
@@ -508,6 +523,19 @@
     if (text != null) n.textContent = text;
     return n;
   }
+  /** A→Z, ignoring upper/lower case, with numbers in natural order (2 before 10). */
+  function byName(a, b) { return String(a).localeCompare(String(b), 'en', { sensitivity: 'base', numeric: true }); }
+  /** Category order for a tab: the server's list (custom order, then A→Z), anything else A→Z at the end. */
+  function orderedCategories(tabName, names) {
+    var ref = (state.data.editor && state.data.editor.categories && state.data.editor.categories[tabName]) || [];
+    return names.slice().sort(function (a, b) {
+      var ia = ref.indexOf(a), ib = ref.indexOf(b);
+      if (ia >= 0 && ib >= 0) return ia - ib;
+      if (ia >= 0) return -1;
+      if (ib >= 0) return 1;
+      return byName(a, b);
+    });
+  }
   function safeUrl(u) { return typeof u === 'string' && /^https?:\/\//i.test(u) ? u : null; }
 
   function renderPortal() {
@@ -523,6 +551,8 @@
     var adm = $('admin-link');
     if (d.sheetUrl && safeUrl(d.sheetUrl)) { adm.href = d.sheetUrl; adm.hidden = false; } else { adm.hidden = true; }
     $('search').value = state.query;
+    $('arrange-btn').hidden = u.role !== 'Admin';
+    if (u.role !== 'Admin') setArranging(false);
     show('view-portal');
     renderTabs(); renderBody();
   }
@@ -533,9 +563,13 @@
       var b = el('button', 'tab');
       b.type = 'button'; b.setAttribute('role', 'tab');
       b.setAttribute('aria-selected', i === state.tab ? 'true' : 'false');
+      if (state.arranging) { b.setAttribute('data-sortable', t.name); b.insertAdjacentHTML('beforeend', GRIP); }
       b.appendChild(document.createTextNode(t.name));
       b.appendChild(el('span', 'count', String(t.items.length)));
-      b.addEventListener('click', function () { state.tab = i; state.cat = 'All'; renderTabs(); renderBody(); });
+      b.addEventListener('click', function () {
+        if (suppressClick) return;
+        state.tab = i; state.cat = 'All'; renderTabs(); renderBody();
+      });
       box.appendChild(b);
     });
   }
@@ -544,14 +578,20 @@
     var tab = (state.data.tabs || [])[state.tab] || { items: [] };
     var order = [];
     tab.items.forEach(function (it) { if (order.indexOf(it.category) < 0) order.push(it.category); });
+    order = orderedCategories(tab.name, order); // custom order set by Admins, otherwise A→Z
     if (state.cat !== 'All' && order.indexOf(state.cat) < 0) state.cat = 'All';
 
     var pills = $('pills'); pills.textContent = '';
     ['All'].concat(order).forEach(function (c) {
-      var p = el('button', 'pill', c);
+      var p = el('button', 'pill');
       p.type = 'button';
+      if (state.arranging && c !== 'All') { p.setAttribute('data-sortable', c); p.insertAdjacentHTML('beforeend', GRIP); }
+      p.appendChild(document.createTextNode(c));
       p.setAttribute('aria-pressed', c === state.cat ? 'true' : 'false');
-      p.addEventListener('click', function () { state.cat = c; renderBody(); });
+      p.addEventListener('click', function () {
+        if (state.arranging) return; // in Arrange mode the buttons only move
+        state.cat = c; renderBody();
+      });
       pills.appendChild(p);
     });
 
@@ -635,7 +675,7 @@
     var cats = fromServer ? fromServer.slice() : [];
     var tab = (state.data.tabs || []).filter(function (t) { return t.name === tabName; })[0];
     (tab ? tab.items : []).forEach(function (i) { if (cats.indexOf(i.category) < 0) cats.push(i.category); });
-    return cats;
+    return orderedCategories(tabName, cats);
   }
   /** Rebuilds the Category dropdown for the selected tab, keeping `want` selected when possible. */
   function fillCategoryList(want) {
@@ -800,6 +840,112 @@
   $('ed-close').addEventListener('click', closeEditor);
   // The dialog only closes through the X / Cancel buttons: ignore Esc and clicks outside it.
   $('editor').addEventListener('cancel', function (e) { e.preventDefault(); });
+
+  // ---- Arrange mode: Admins drag tabs and categories into a custom order ----
+  var GRIP = '<svg class="grip" aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"></circle><circle cx="15" cy="6" r="1.6"></circle><circle cx="9" cy="12" r="1.6"></circle><circle cx="15" cy="12" r="1.6"></circle><circle cx="9" cy="18" r="1.6"></circle><circle cx="15" cy="18" r="1.6"></circle></svg>';
+  var suppressClick = false;
+  var saveChain = Promise.resolve();
+
+  function setArranging(on) {
+    state.arranging = !!on;
+    document.body.classList.toggle('arranging', state.arranging);
+    $('arrange-btn').setAttribute('aria-pressed', state.arranging ? 'true' : 'false');
+    $('arrange-label').textContent = state.arranging ? 'Done' : 'Arrange';
+    $('arrange-bar').hidden = !state.arranging;
+    if (state.data) { if (state.arranging) state.cat = 'All'; renderTabs(); renderBody(); }
+  }
+
+  /** Makes the [data-sortable] children of `box` draggable (mouse, touch and pen); calls onDrop(names) after a move. */
+  function makeSortable(box, onDrop) {
+    var drag = null;
+    box.addEventListener('pointerdown', function (e) {
+      if (!state.arranging || (e.pointerType === 'mouse' && e.button !== 0)) return;
+      var item = e.target.closest('[data-sortable]');
+      if (!item || !box.contains(item)) return;
+      drag = { item: item, id: e.pointerId, x: e.clientX, y: e.clientY, moved: false, before: names(box).join('\u0000') };
+    });
+    box.addEventListener('pointermove', function (e) {
+      if (!drag || e.pointerId !== drag.id) return;
+      if (!drag.moved) {
+        if (Math.abs(e.clientX - drag.x) + Math.abs(e.clientY - drag.y) < 6) return;
+        drag.moved = true;
+        drag.item.classList.add('dragging');
+        try { drag.item.setPointerCapture(e.pointerId); } catch (err) {}
+      }
+      e.preventDefault();
+      var under = document.elementFromPoint(e.clientX, e.clientY);
+      var target = under && under.closest('[data-sortable]');
+      if (!target || target === drag.item || !box.contains(target)) return;
+      var r = target.getBoundingClientRect();
+      var after = e.clientX > r.left + r.width / 2;
+      box.insertBefore(drag.item, after ? target.nextSibling : target);
+    });
+    function end(e) {
+      if (!drag || (e && e.pointerId !== drag.id)) return;
+      var d = drag; drag = null;
+      d.item.classList.remove('dragging');
+      if (!d.moved) return;
+      suppressClick = true; setTimeout(function () { suppressClick = false; }, 0);
+      if (names(box).join('\u0000') !== d.before) onDrop(names(box));
+    }
+    box.addEventListener('pointerup', end);
+    box.addEventListener('pointercancel', end);
+    // Keyboard: focus an item and press ← / → to move it.
+    box.addEventListener('keydown', function (e) {
+      if (!state.arranging || (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight')) return;
+      var item = e.target.closest('[data-sortable]');
+      if (!item) return;
+      var sib = e.key === 'ArrowLeft' ? item.previousElementSibling : item.nextElementSibling;
+      if (!sib || !sib.hasAttribute('data-sortable')) return;
+      e.preventDefault();
+      box.insertBefore(item, e.key === 'ArrowLeft' ? sib : sib.nextSibling);
+      var label = item.getAttribute('data-sortable');
+      onDrop(names(box), function () {
+        var again = box.querySelector('[data-sortable="' + CSS.escape(label) + '"]');
+        if (again) again.focus();
+      });
+    });
+  }
+  function names(box) {
+    return Array.prototype.map.call(box.querySelectorAll('[data-sortable]'), function (n) { return n.getAttribute('data-sortable'); });
+  }
+
+  function saveOrder(payload) {
+    saveChain = saveChain.then(function () {
+      return api(Object.assign({ action: 'reorder' }, payload)).then(function (res) {
+        if (!res.ok) throw new Error(res.message || res.error);
+        // Take the server's copy without redrawing, so a drag in progress isn't interrupted.
+        var keep = currentTabName();
+        state.data = res;
+        var idx = res.tabs.map(function (t) { return t.name; }).indexOf(keep);
+        state.tab = idx >= 0 ? idx : 0;
+        toast('Order saved.');
+      });
+    }).catch(function (err) {
+      toast('Couldn’t save the order: ' + ((err && err.message) || 'please try again') + '.');
+      return api({ action: 'list' }).then(function (res) { if (res.ok) applyData(res); }).catch(function () {});
+    });
+  }
+
+  makeSortable($('tabs'), function (order, after) {
+    var keep = currentTabName();
+    var byName2 = {};
+    state.data.tabs.forEach(function (t) { byName2[t.name] = t; });
+    state.data.tabs = order.map(function (n) { return byName2[n]; }).filter(Boolean);
+    state.data.editor.tabs = order.slice();
+    state.tab = Math.max(0, order.indexOf(keep));
+    renderTabs();
+    if (after) after();
+    saveOrder({ kind: 'tabs', order: order });
+  });
+  makeSortable($('pills'), function (order, after) {
+    var tabName = currentTabName();
+    state.data.editor.categories[tabName] = order.slice();
+    renderBody();
+    if (after) after();
+    saveOrder({ kind: 'categories', tab: tabName, order: order });
+  });
+  $('arrange-btn').addEventListener('click', function () { setArranging(!state.arranging); });
 
   // ---- Theme (dark by default, remembered in this browser) ----
   function currentTheme() { return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark'; }
